@@ -2,54 +2,37 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reto Fiscal CFF</title>
+<title>Misión Contribuyente CFF</title>
 <style>
-body{font-family:Arial,sans-serif;background:#111827;color:#fff;margin:0;min-height:100vh}
-.wrap{max-width:850px;margin:auto;padding:22px}
-.card{background:#1f2937;border-radius:18px;padding:25px;box-shadow:0 8px 30px #0006}
-h1{text-align:center;margin-top:5px}.tag{text-align:center;color:#93c5fd}
-button{border:0;border-radius:12px;padding:13px 17px;margin:7px;cursor:pointer;font-weight:bold}
-.opt{display:block;width:100%;text-align:left;background:#374151;color:#fff}.opt:hover{background:#4b5563}
-.correct{background:#166534!important}.wrong{background:#991b1b!important}
-#next{background:#60a5fa;color:#111827}.bar{height:10px;background:#374151;border-radius:10px;overflow:hidden}.fill{height:100%;background:#60a5fa;width:0}
-.small{color:#cbd5e1}.score{font-size:20px;font-weight:bold}
-.hidden{display:none}.result{text-align:center}
+body{font-family:Arial,sans-serif;background:#0b1320;color:#fff;margin:0}.wrap{max-width:900px;margin:auto;padding:18px}
+.card{background:#172033;border-radius:18px;padding:22px;box-shadow:0 8px 30px #0007}
+h1{text-align:center}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.stage{padding:16px;background:#26344d;border-radius:14px;text-align:center}.done{background:#14532d}.active{outline:3px solid #60a5fa}
+button{border:0;border-radius:12px;padding:13px 17px;margin:6px;cursor:pointer;font-weight:bold}.primary{background:#60a5fa}.option{display:block;width:100%;background:#334155;color:white;text-align:left}.option:hover{background:#475569}
+#challenge{margin-top:20px}.hidden{display:none}.msg{padding:12px;border-radius:10px;background:#111827}.points{font-size:20px;font-weight:bold}
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}}
 </style></head>
 <body><div class="wrap"><div class="card">
-<div id="start">
-<h1>🎯 RETO FISCAL CFF</h1><p class="tag">Trivia interactiva sobre el Código Fiscal de la Federación</p>
-<p><b>Alumno:</b> Farrera Ulloa Brayan<br><b>Escuela:</b> CECyT 5 – IPN<br><b>Grupo:</b> 3IM1</p>
-<p>Responde 15 retos. Cada respuesta correcta vale 10 puntos. Lee con atención: algunas preguntas son de conceptos y otras presentan situaciones.</p>
-<button onclick="start()">Comenzar juego</button>
-</div>
-<div id="game" class="hidden">
-<p class="small" id="count"></p><div class="bar"><div class="fill" id="fill"></div></div>
-<h2 id="q"></h2><div id="opts"></div><p id="feedback"></p><button id="next" class="hidden" onclick="next()">Siguiente</button>
-<p class="score">Puntos: <span id="score">0</span></p>
-</div>
-<div id="end" class="hidden result"><h1>🏆 ¡Reto terminado!</h1><h2 id="final"></h2><p>¡Gracias por jugar y repasar conceptos del CFF!</p><button onclick="location.reload()">Jugar otra vez</button></div>
+<h1>🧭 MISIÓN: CONTRIBUYENTE</h1>
+<p><b>Alumno:</b> Farrera Ulloa Brayan &nbsp; | &nbsp; <b>Escuela:</b> CECyT 5 – IPN &nbsp; | &nbsp; <b>Grupo:</b> 3IM1</p>
+<p>Completa 6 estaciones. En cada una resuelve un caso fiscal para avanzar. Ganas 20 puntos por reto correcto y pierdes 5 si fallas. El objetivo es llegar a la meta con al menos 80 puntos.</p>
+<div class="grid" id="map"></div>
+<div id="challenge"><h2 id="title"></h2><p id="story"></p><div id="options"></div><p id="msg" class="msg"></p></div>
+<p class="points">Puntos: <span id="pts">0</span></p>
+<div id="finish" class="hidden"><h2>🏁 Misión completada</h2><p id="result"></p><button class="primary" onclick="location.reload()">Jugar de nuevo</button></div>
 </div></div>
 <script>
-const qs=[
-["¿Qué significan las siglas CFF?","Código Fiscal de la Federación",["Código Federal Financiero","Código Fiscal Federal","Consejo Fiscal de la Federación"]],
-["¿Qué tipos de contribuciones reconoce el artículo 2 del CFF?","Impuestos, aportaciones de seguridad social, contribuciones de mejoras y derechos",["Solo impuestos y derechos","ISR, IVA y IEPS","Multas, recargos y sanciones"]],
-["¿Qué es el Buzón Tributario?","Un sistema de comunicación electrónico entre el SAT y los contribuyentes",["Una cuenta bancaria","Una oficina física del SAT","Un programa para hacer facturas"]],
-["¿Qué artículo del CFF regula el Buzón Tributario?","Artículo 17-K",["Artículo 2","Artículo 28","Artículo 30"]],
-["¿Qué artículo del CFF trata sobre la expedición de comprobantes fiscales?","Artículo 29",["Artículo 6","Artículo 17-K","Artículo 70"]],
-["¿Qué significa CFDI?","Comprobante Fiscal Digital por Internet",["Certificado Fiscal de Declaración Interna","Código Federal Digital de Impuestos","Comprobante Financiero de Declaración Individual"]],
-["¿Qué regula principalmente el artículo 28 del CFF?","La contabilidad",["El Buzón Tributario","Las multas","Los tratados internacionales"]],
-["¿Qué establece el artículo 6 del CFF sobre las contribuciones?","Se causan conforme se realizan las situaciones jurídicas o de hecho previstas en las leyes fiscales",["Siempre se causan al final del año","Solo se causan cuando llega una multa","Se causan únicamente al presentar una factura"]],
-["Una persona recibe un servicio y la operación requiere comprobante fiscal. ¿Qué debe solicitar?","El CFDI correspondiente",["Una multa","Una contraseña bancaria","Un permiso de tránsito"]],
-["¿Quién administra el Buzón Tributario?","El SAT",["El INEGI","El Banco de México","La Secretaría de Educación Pública"]],
-["¿Qué debe hacer un contribuyente con sus medios de contacto del Buzón Tributario?","Mantenerlos actualizados",["Eliminarlos cada mes","Compartirlos públicamente","Cambiarles el nombre"]],
-["¿Cuál es la finalidad de llevar contabilidad?","Registrar y conservar información de las operaciones conforme a las obligaciones fiscales",["Evitar todas las contribuciones","Sustituir el RFC","Reemplazar el Buzón Tributario"]],
-["Si el SAT envía un aviso al Buzón Tributario, ¿qué debe hacer el contribuyente?","Consultar el buzón y atender, en su caso, la comunicación o requerimiento",["Ignorarlo siempre","Borrar su RFC","Crear otra cuenta bancaria"]],
-["¿Cuál de estos NO es un tipo de contribución mencionado en el artículo 2 del CFF?","Multas",["Impuestos","Derechos","Aportaciones de seguridad social"]],
-["¿Qué documento digital se utiliza como comprobante fiscal por Internet?","CFDI",["INE","CURP","Acta de nacimiento"]]
+const levels=[
+["1. Identificación","Una persona comienza actividades y necesita identificarse ante la autoridad fiscal. ¿Qué registro se relaciona con esa identificación?","RFC",["CFDI","RFC","Buzón Tributario","Contabilidad"]],
+["2. Contribuciones","Una pregunta del examen pide reconocer una clasificación del artículo 2 del CFF. ¿Cuál opción es correcta?","Derechos",["Multas","Derechos","Contratos privados","Recibos bancarios"]],
+["3. Contabilidad","Una empresa debe cumplir con obligaciones relacionadas con el registro de sus operaciones. ¿Qué concepto del CFF corresponde?","Contabilidad",["Contabilidad","Pasaporte","Buzón físico","Nómina escolar"]],
+["4. Comprobante fiscal","Una empresa realiza una operación por la que debe expedir comprobante fiscal. ¿Qué documento digital corresponde?","CFDI",["CFDI","CURP","RFC impreso","Acta constitutiva"]],
+["5. Buzón Tributario","El SAT envía una comunicación mediante su sistema electrónico oficial. ¿Dónde debe revisarla el contribuyente?","Buzón Tributario",["Correo de un amigo","Buzón Tributario","Registro Civil","Banco"]],
+["6. Cumplimiento","El contribuyente revisa una comunicación del SAT y debe atender un requerimiento. ¿Qué conducta es la más adecuada?","Revisar la comunicación y cumplir lo que corresponda","Ignorarla","Eliminar su RFC","No conservar documentos",]
 ];
-let i=0,score=0,answered=false;
-function start(){document.getElementById("start").classList.add("hidden");document.getElementById("game").classList.remove("hidden");show()}
-function show(){answered=false;let x=qs[i];document.getElementById("count").textContent=`Pregunta ${i+1} de ${qs.length}`;document.getElementById("fill").style.width=((i)/qs.length*100)+"%";document.getElementById("q").textContent=x[0];let a=[x[1],...x[2]].sort(()=>Math.random()-.5);document.getElementById("opts").innerHTML=a.map(v=>`<button class="opt" onclick="answer(this,'${v.replace(/'/g,"\\'")}')">${v}</button>`).join("");document.getElementById("feedback").textContent="";document.getElementById("next").classList.add("hidden")}
-function answer(btn,v){if(answered)return;answered=true;let correct=qs[i][1];document.querySelectorAll(".opt").forEach(b=>{if(b.textContent===correct)b.classList.add("correct")});if(v===correct){score+=10;btn.classList.add("correct");document.getElementById("feedback").textContent="✅ Correcto. +10 puntos"}else{btn.classList.add("wrong");document.getElementById("feedback").textContent="❌ Incorrecto. La respuesta correcta es: "+correct}document.getElementById("score").textContent=score;document.getElementById("next").classList.remove("hidden")}
-function next(){i++;if(i>=qs.length){document.getElementById("game").classList.add("hidden");document.getElementById("end").classList.remove("hidden");document.getElementById("final").textContent=`Obtuviste ${score} de ${qs.length*10} puntos.`}else show()}
+let pos=0,pts=0,done=false;
+function renderMap(){document.getElementById("map").innerHTML=levels.map((x,n)=>`<div class="stage ${n<pos?"done":""} ${n===pos?"active":""}">📍<br>${x[0]}</div>`).join("")}
+function show(){renderMap();let l=levels[pos];document.getElementById("title").textContent=l[0];document.getElementById("story").textContent=l[1];document.getElementById("options").innerHTML=l[3].map(v=>`<button class="option" onclick="choose(this,'${v.replace(/'/g,"\\'")}')">${v}</button>`).join("");document.getElementById("msg").textContent="Elige una respuesta para avanzar."}
+function choose(btn,v){if(done)return;done=true;let l=levels[pos];if(v===l[2]){pts+=20;btn.style.background="#166534";document.getElementById("msg").textContent="✅ ¡Reto superado! +20 puntos."}else{pts=Math.max(0,pts-5);btn.style.background="#991b1b";document.getElementById("msg").textContent="❌ No fue correcto. La respuesta era: "+l[2]+" (-5 puntos)."}document.getElementById("pts").textContent=pts;setTimeout(()=>{pos++;done=false;if(pos>=levels.length){document.getElementById("challenge").classList.add("hidden");document.getElementById("finish").classList.remove("hidden");document.getElementById("result").textContent=`Terminaste las 6 estaciones con ${pts} puntos. ${pts>=80?"¡Misión cumplida con éxito!":"Puedes volver a jugar para mejorar tu puntuación."}`}else show()},900)}
+show();
 </script></body></html>
